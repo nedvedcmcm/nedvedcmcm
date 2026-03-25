@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>朗朗的游戏乐园</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 50%, #ff9a9e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* 标题区域 */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: slideDown 0.6s ease;
+        }
+
+        .header h1 {
+            font-size: clamp(28px, 8vw, 48px);
+            color: #e96a6a;
+            text-shadow: 0 3px 8px rgba(233, 106, 106, 0.3);
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .header p {
+            font-size: clamp(16px, 4vw, 20px);
+            color: #ff6b8b;
+            opacity: 0.9;
+        }
+
+        /* 游戏卡片网格 */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 10px;
+        }
+
+        /* 游戏卡片 */
+        .game-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 8px 28px rgba(233, 106, 106, 0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            border: 4px solid transparent;
+            animation: fadeIn 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        .game-card:nth-child(1) { animation-delay: 0.2s; }
+        .game-card:nth-child(2) { animation-delay: 0.4s; }
+        .game-card:nth-child(3) { animation-delay: 0.6s; }
+        .game-card:nth-child(4) { animation-delay: 0.8s; }
+
+        .game-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 36px rgba(233, 106, 106, 0.25);
+            border-color: #ffb8c8;
+        }
+
+        .game-card:active {
+            transform: translateY(-4px) scale(0.98);
+        }
+
+        /* 卡片图标 */
+        .card-icon {
+            font-size: clamp(64px, 15vw, 96px);
+            margin-bottom: 16px;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .game-card:nth-child(2) .card-icon {
+            animation-delay: 1.5s;
+        }
+
+        /* 卡片标题 */
+        .card-title {
+            font-size: clamp(22px, 5vw, 28px);
+            color: #e96a6a;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        /* 卡片描述 */
+        .card-desc {
+            font-size: clamp(14px, 3.5vw, 16px);
+            color: #888;
+            line-height: 1.6;
+        }
+
+        /* 新增游戏提示 */
+        .add-game-hint {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 16px;
+            font-size: 14px;
+            color: #e96a6a;
+            animation: fadeIn 1s ease 1s forwards;
+            opacity: 0;
+        }
+
+        .add-game-hint code {
+            background: #fff;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            color: #ff6b8b;
+        }
+
+        /* 动画 */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* 移动端优化 */
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+
+            .games-grid {
+                gap: 16px;
+                padding: 8px;
+            }
+
+            .game-card {
+                padding: 20px;
+                border-radius: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🎮 朗朗的游戏乐园</h1>
+            <p>选一个游戏，开始玩吧！</p>
+        </header>
+
+        <div class="games-grid">
+            <!-- ===== 新增游戏时，复制下面的卡片，修改链接和内容 ===== -->
+
+            <!-- 恐龙数字游戏 -->
+            <a href="dino-numbers.html" class="game-card">
+                <div class="card-icon">🦕</div>
+                <div class="card-title">恐龙数字</div>
+                <div class="card-desc">数一数有多少只恐龙？</div>
+            </a>
+
+            <!-- 原来的游戏 -->
+            <a href="index-old.html" class="game-card">
+                <div class="card-icon">🎯</div>
+                <div class="card-title">数字配对</div>
+                <div class="card-desc">找出正确的数字吧！</div>
+            </a>
+
+            <!-- ===== 示例：新增游戏卡片模板 ===== -->
+            <!-- 
+            <a href="new-game.html" class="game-card">
+                <div class="card-icon">🌟</div>
+                <div class="card-title">新游戏名称</div>
+                <div class="card-desc">游戏描述文字</div>
+            </a>
+            -->
+            <!-- ===== 示例结束 ===== -->
+
+        </div>
+
+        <div class="add-game-hint">
+            💡 新增游戏只需：上传 HTML 文件 → 在本文件中复制一个游戏卡片 → 改标题和链接
+        </div>
+    </div>
+</body>
+</html>
