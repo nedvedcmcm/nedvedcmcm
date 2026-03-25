@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#e96a6a">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>🍎 水果认数字</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: linear-gradient(160deg, #fef0e4 0%, #fce8f3 100%);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif;
+    text-align: center;
+    min-height: 100vh;
+    padding: 12px 12px 20px;
+    overflow-x: hidden;
+}
+
+/* ===== 标题 ===== */
+.title {
+    font-size: 28px;
+    color: #e96a6a;
+    margin: 8px 0 14px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 6px rgba(233,106,106,0.2);
+}
+
+/* ===== 进度条 ===== */
+.progress-wrap {
+    max-width: 380px;
+    margin: 0 auto 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.progress-bar-bg {
+    flex: 1;
+    height: 10px;
+    background: #f0e0f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #f79bd3, #e96a6a);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+.progress-text {
+    font-size: 13px;
+    color: #c07090;
+    white-space: nowrap;
+}
+
+/* ===== 水果展示区 ===== */
+.dino-area {
+    width: 100%;
+    max-width: 400px;
+    min-height: 240px;
+    margin: 0 auto 20px;
+    background: #fff;
+    border-radius: 28px;
+    box-shadow: 0 8px 28px rgba(200,100,120,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 水果名称标签 */
+.dino-label {
+    position: absolute;
+    top: 10px;
+    left: 16px;
+    font-size: 13px;
+    color: #bbb;
+    font-weight: 500;
+}
+
+/* 单个水果 */
+.dino-item {
+    font-size: 54px;
+    line-height: 1;
+    display: inline-block;
+    transform-origin: center bottom;
+    user-select: none;
+    transition: transform 0.15s;
+    animation: dinoIn 0.3s ease both;
+}
+@keyframes dinoIn {
+    from { opacity: 0; transform: scale(0.3) rotate(-10deg); }
+    to   { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+/* 答对跳跃动画 */
+.dino-item.jump {
+    animation: jump 0.5s ease forwards;
+}
+@keyframes jump {
+    0%   { transform: translateY(0) scale(1); }
+    30%  { transform: translateY(-18px) scale(1.15); }
+    60%  { transform: translateY(-6px) scale(1.05); }
+    100% { transform: translateY(0) scale(1); }
+}
+
+/* ===== 问题提示文字 ===== */
+.question {
+    font-size: 20px;
+    color: #e96a6a;
+    font-weight: bold;
+    margin-bottom: 16px;
+    min-height: 28px;
+    animation: fadeIn 0.4s ease;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== 数字键盘 ===== */
+.num-keyboard {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    max-width: 252px;
+    margin: 0 auto;
+}
+.num-btn {
+    width: 100%;
+    aspect-ratio: 1/1;
+    border: 3px solid transparent;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    font-size: 24px;
+    font-weight: bold;
+    color: #444;
+    cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.12s, background 0.12s, border-color 0.12s;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+}
+.num-btn:active {
+    transform: scale(0.93);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    background: #fef0f0;
+}
+.num-btn.correct {
+    border-color: #6de68b;
+    background: #edfff3;
+    animation: correctPulse 0.4s ease;
+}
+.num-btn.wrong {
+    border-color: #ffb3b3;
+    background: #fff0f0;
+    animation: shake 0.35s ease;
+}
+@keyframes correctPulse {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.12); }
+    100% { transform: scale(1); }
+}
+@keyframes shake {
+    0%   { transform: translateX(0); }
+    20%  { transform: translateX(-6px); }
+    40%  { transform: translateX(6px); }
+    60%  { transform: translateX(-4px); }
+    80%  { transform: translateX(4px); }
+    100% { transform: translateX(0); }
+}
+
+/* ===== 表扬弹窗 ===== */
+.praise-popup {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.18);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+.praise-popup.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+.praise-card {
+    background: #fff;
+    border-radius: 28px;
+    padding: 32px 36px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.18);
+    transform: scale(0.7);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-align: center;
+    min-width: 240px;
+}
+.praise-popup.show .praise-card {
+    transform: scale(1);
+}
+.praise-tiger {
+    font-size: 72px;
+    display: block;
+    margin-bottom: 10px;
+    animation: bounce 0.6s infinite alternate ease-in-out;
+}
+@keyframes bounce {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-10px); }
+}
+.praise-text {
+    font-size: 22px;
+    color: #e96a6a;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+.praise-sub {
+    font-size: 15px;
+    color: #aaa;
+}
+
+/* ===== 星星特效 ===== */
+.star {
+    position: fixed;
+    pointer-events: none;
+    font-size: 26px;
+    animation: starFly 1.2s ease-out forwards;
+    z-index: 200;
+}
+@keyframes starFly {
+    0%   { opacity: 1; transform: scale(0.5) translateY(0); }
+    100% { opacity: 0; transform: scale(1.4) translateY(-120px) rotate(30deg); }
+}
+</style>
+</head>
+<body>
+
+<div class="title">🍎 水果认数字</div>
+
+<!-- 进度条 -->
+<div class="progress-wrap">
+    <div class="progress-bar-bg">
+        <div class="progress-bar" id="progressBar" style="width:11%"></div>
+    </div>
+    <div class="progress-text" id="progressText">1 / 9</div>
+</div>
+
+<!-- 问题提示 -->
+<div class="question" id="question">这里有几个水果？</div>
+
+<!-- 水果展示区 -->
+<div class="dino-area" id="dinoArea">
+    <span class="dino-label" id="dinoLabel"></span>
+</div>
+
+<!-- 数字键盘（1-9） -->
+<div class="num-keyboard" id="keyboard">
+    <button class="num-btn" onclick="checkNum(1,this)">1</button>
+    <button class="num-btn" onclick="checkNum(2,this)">2</button>
+    <button class="num-btn" onclick="checkNum(3,this)">3</button>
+    <button class="num-btn" onclick="checkNum(4,this)">4</button>
+    <button class="num-btn" onclick="checkNum(5,this)">5</button>
+    <button class="num-btn" onclick="checkNum(6,this)">6</button>
+    <button class="num-btn" onclick="checkNum(7,this)">7</button>
+    <button class="num-btn" onclick="checkNum(8,this)">8</button>
+    <button class="num-btn" onclick="checkNum(9,this)">9</button>
+</div>
+
+<!-- 表扬弹窗 -->
+<div class="praise-popup" id="praisePopup">
+    <div class="praise-card">
+        <span class="praise-tiger" id="tigerEmoji">🐯</span>
+        <div class="praise-text" id="praiseText">朗朗你真棒！</div>
+        <div class="praise-sub" id="praiseSub">太厉害了✨</div>
+    </div>
+</div>
+
+<script>
+// ===== 水果数据（emoji + 名称，9 种，数量 1-9） =====
+const dinoData = [
+    { name: "苹果", count: 1, emoji: "🍎" },
+    { name: "香蕉", count: 2, emoji: "🍌" },
+    { name: "草莓", count: 3, emoji: "🍓" },
+    { name: "葡萄", count: 4, emoji: "🍇" },
+    { name: "西瓜", count: 5, emoji: "🍉" },
+    { name: "桃子", count: 6, emoji: "🍑" },
+    { name: "橙子", count: 7, emoji: "🍊" },
+    { name: "菠萝", count: 8, emoji: "🍍" },
+    { name: "樱桃", count: 9, emoji: "🍒" }
+];
+
+// 随机打乱顺序（每次游戏顺序不同）
+let shuffled = [...dinoData].sort(() => Math.random() - 0.5);
+
+// 表扬语库
+const praisePhrases = [
+    ["朗朗你真棒！", "数对了，超厉害✨"],
+    ["答对啦！", "小朗朗真聪明🌟"],
+    ["太厉害了！", "一下就数出来啦🎉"],
+    ["哇好棒！", "继续加油哦💪"],
+    ["正确！", "朗朗是数字小达人🏆"],
+];
+
+let currentIndex = 0;
+let busy = false; // 防止连点
+
+// ===== 初始化 =====
+loadDinoPage();
+
+function loadDinoPage() {
+    busy = false;
+    const current = shuffled[currentIndex];
+    const dinoArea = document.getElementById("dinoArea");
+
+    // 清空
+    dinoArea.innerHTML = `<span class="dino-label" id="dinoLabel">${current.name}</span>`;
+
+    // 生成水果（带延迟入场）
+    for (let i = 0; i < current.count; i++) {
+        const span = document.createElement("span");
+        span.className = "dino-item";
+        span.textContent = current.emoji;
+        span.style.animationDelay = `${i * 0.06}s`;
+        dinoArea.appendChild(span);
+    }
+
+    // 进度
+    updateProgress();
+
+    // 问题文字 - 修改为"个"
+    const questionText = `这里有几个${current.name}？`;
+    document.getElementById("question").textContent = questionText;
+    document.getElementById("question").style.animation = "none";
+    requestAnimationFrame(() => {
+        document.getElementById("question").style.animation = "fadeIn 0.4s ease";
+    });
+
+    // 隐藏弹窗
+    document.getElementById("praisePopup").classList.remove("show");
+
+    // 恢复按钮样式
+    document.querySelectorAll(".num-btn").forEach(b => {
+        b.classList.remove("correct","wrong");
+    });
+
+    // 语音朗读问题（让不识字的小朋友也能玩）
+    setTimeout(() => {
+        speakQuestion(questionText);
+    }, 300);
+}
+
+function updateProgress() {
+    const total = shuffled.length;
+    const done = currentIndex;
+    const pct = ((done + 1) / total * 100).toFixed(0);
+    document.getElementById("progressBar").style.width = pct + "%";
+    document.getElementById("progressText").textContent = `${done + 1} / ${total}`;
+}
+
+// ===== 检查答案 =====
+function checkNum(num, btn) {
+    if (busy) return;
+    const current = shuffled[currentIndex];
+
+    // iOS 关键修复：在用户手势事件里同步 resume AudioContext
+    resumeAudio();
+
+    if (num === current.count) {
+        busy = true;
+
+        // 按钮变绿
+        btn.classList.add("correct");
+
+        // 水果跳跃
+        document.querySelectorAll(".dino-item").forEach((d, i) => {
+            setTimeout(() => d.classList.add("jump"), i * 60);
+        });
+
+        // 星星特效
+        spawnStars(4);
+
+        // 显示表扬弹窗
+        const phrase = praisePhrases[Math.floor(Math.random() * praisePhrases.length)];
+        document.getElementById("praiseText").textContent = phrase[0];
+        document.getElementById("praiseSub").textContent = phrase[1];
+        setTimeout(() => {
+            document.getElementById("praisePopup").classList.add("show");
+        }, 200);
+
+        // 先念数字，念完再播欢呼声
+        speakNum(num).then(() => {
+            playPraise();
+        });
+
+        // 1.8 秒后下一题（与语音并行计时，避免语音过长时卡住）
+        setTimeout(() => {
+            currentIndex = (currentIndex + 1) % shuffled.length;
+            // 每轮结束重新打乱
+            if (currentIndex === 0) {
+                shuffled = [...dinoData].sort(() => Math.random() - 0.5);
+            }
+            loadDinoPage();
+        }, 1800);
+
+    } else {
+        // 答错：按钮抖动，无惩罚
+        btn.classList.add("wrong");
+        playWrong();
+        setTimeout(() => btn.classList.remove("wrong"), 400);
+    }
+}
+
+// ===== 星星特效 =====
+function spawnStars(n) {
+    const emojis = ["⭐","🌟","✨","💫","🎉","🎊"];
+    for (let i = 0; i < n; i++) {
+        setTimeout(() => {
+            const s = document.createElement("span");
+            s.className = "star";
+            s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            s.style.left = (20 + Math.random() * 60) + "%";
+            s.style.top  = (30 + Math.random() * 30) + "%";
+            document.body.appendChild(s);
+            setTimeout(() => s.remove(), 1300);
+        }, i * 120);
+    }
+}
+
+// ===== 语音朗读数字 =====
+function speakNum(num) {
+    return new Promise((resolve) => {
+        if (!('speechSynthesis' in window)) { resolve(); return; }
+
+        // iOS 有时 speechSynthesis 会卡住，先 cancel 清空队列
+        speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(num.toString());
+        utterance.lang = 'zh-CN';
+        utterance.rate = 0.4;
+        utterance.pitch = 1.1;
+        utterance.volume = 1;
+        utterance.onend = resolve;
+        utterance.onerror = resolve;
+
+        // iOS 需要短暂延迟再 speak，否则可能无声
+        setTimeout(() => speechSynthesis.speak(utterance), 50);
+
+        // 保底：最多等 2 秒，防止 onend 不触发
+        setTimeout(resolve, 2000);
+    });
+}
+
+// ===== 语音朗读问题 =====
+function speakQuestion(text) {
+    if (!('speechSynthesis' in window)) return;
+    
+    // 先取消之前的语音
+    speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'zh-CN';
+    utterance.rate = 0.85;
+    utterance.pitch = 1.15;
+    utterance.volume = 1;
+    
+    // iOS 需要短暂延迟再 speak
+    setTimeout(() => speechSynthesis.speak(utterance), 50);
+}
+
+// ===== Web Audio 音效（无需外部资源） =====
+let audioCtx = null;
+function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+}
+
+// iOS 必须在用户手势里 resume AudioContext
+function resumeAudio() {
+    try {
+        const ctx = getAudioCtx();
+        if (ctx.state === 'suspended') ctx.resume();
+    } catch(e) {}
+}
+
+function playPraise() {
+    try {
+        const ctx = getAudioCtx();
+        // 播放 3 个上升音符
+        const notes = [523.25, 659.25, 783.99]; // C5 E5 G5
+        notes.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = "sine";
+            osc.frequency.value = freq;
+            const t = ctx.currentTime + i * 0.15;
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.3, t + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+            osc.start(t);
+            osc.stop(t + 0.4);
+        });
+    } catch(e) {}
+}
+
+function playWrong() {
+    try {
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "sine";
+        osc.frequency.value = 280;
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.25);
+    } catch(e) {}
+}
+
+// ===== PWA Service Worker 注册 =====
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('SW 已注册:', reg.scope))
+            .catch(err => console.log('SW 注册失败:', err));
+    });
+}
+
+// ===== iOS 首次触摸时激活音频 =====
+document.addEventListener('touchstart', function initAudio() {
+    resumeAudio();
+    // 触发一次静音语音，激活 speechSynthesis
+    if ('speechSynthesis' in window) {
+        const s = new SpeechSynthesisUtterance('');
+        speechSynthesis.speak(s);
+    }
+    document.removeEventListener('touchstart', initAudio);
+}, { once: true });
+</script>
+</body>
+</html>
